@@ -1,0 +1,100 @@
+function printPost(postTitle) {
+  var els = document.querySelectorAll(".ob-Shares-print")
+  for (var i = 0; i < els.length; i++) {
+    els[i].style.display = ""
+    els[i].onclick = function() {
+      setupPrint(postTitle)
+    }
+  }
+}
+
+function setupPrint(title) {
+  // Do not use `location.origin` since it is not compatible with IE
+  var origin =
+    window.location.protocol +
+    "//" +
+    window.location.hostname +
+    (window.location.port ? ":" + window.location.port : "")
+
+  var nodes = []
+
+  // Extract text, html, quotes, and images
+  var sections = document.querySelectorAll(
+    ".ob-section-text, .ob-section-html, .ob-section-images, .ob-section-quote"
+  )
+
+  for (var i = 0; i < sections.length; ++i) {
+    var section = sections[i]
+
+    // Ignore slideshow
+    if (section.className.indexOf("ob-layout900") >= 0) {
+      continue
+    }
+
+    // Ignore Twitter Cards
+    if (section.hasAttribute("data-twttr-id")) {
+      continue
+    }
+
+    // Clone HTML
+    section = section.cloneNode(true)
+
+    // Fix h3, h4, h5
+    if (section.className.indexOf("ob-section-text") >= 0) {
+      for (var n = 3; n < 6; n++) {
+        var hh = section.querySelectorAll("h" + n)
+        for (var j = 0; j < hh.length; j++) {
+          var old = hh[j]
+          var repl = document.createElement("h" + (n - 1))
+          repl.innerHTML = old.innerHTML
+          old.parentNode.replaceChild(repl, old)
+        }
+      }
+    }
+
+    nodes.push(section)
+  }
+
+  // Create iframe content
+  var dom = h("html", [
+    h("head", [
+      h("title", [title]),
+      h("link", {
+        rel: "stylesheet",
+        media: "all",
+        href: origin + "/bundles/overblogblogblog/assets/ob-print.css",
+      }),
+    ]),
+    h("body", [
+      h("img.ob-logo", {
+        src: origin + "/bundles/overblogblogblog/images/logo-overblog.png",
+      }),
+      h("h1.ob-title", [title]),
+      h("hr"),
+      nodes,
+    ]),
+  ])
+
+  var iframe = document.body.appendChild(h("iframe"))
+  var iframeWin = iframe.contentWindow
+  var iframeDoc = iframe.contentWindow.document
+
+  iframeDoc.open()
+  iframeDoc.write("<!DOCTYPE html>\n")
+  iframeDoc.write(dom.outerHTML)
+  iframeDoc.write("<script>window.print()</script>")
+  iframeDoc.close()
+
+  iframe.style.width = "21cm"
+  iframe.style.height = "29.7cm"
+  iframe.sandbox = "allow-modal allow-scripts allow-same-origin"
+
+  // Do not display the iframe
+  iframe.style.display = "none"
+
+  iframeDoc.onreadystatechange = function() {
+    if (iframeDoc.readyState === "complete") {
+      iframe.parentNode.removeChild(iframe)
+    }
+  }
+}

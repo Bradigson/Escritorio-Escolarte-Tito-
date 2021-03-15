@@ -1,0 +1,53 @@
+var SLIDESHOW_DURATION = 5000
+
+function slideshow(container) {
+  var items = container.querySelectorAll(".ob-slideshow-item")
+  var index = 0
+  var timer
+
+  setup(container)
+  schedule()
+  setIndex(0)
+
+  function cancel() {
+    if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+  }
+
+  function schedule() {
+    cancel()
+    timer = setTimeout(nextImage, SLIDESHOW_DURATION)
+  }
+
+  function nextImage() {
+    setIndex((index + 1) % items.length)
+    schedule()
+  }
+
+  function prevImage() {
+    setIndex((index - 1 + items.length) % items.length)
+    schedule()
+  }
+
+  function setIndex(newIndex) {
+    items[index].classList.remove("active")
+    items[(index = newIndex)].classList.add("active")
+  }
+
+  function setup(slideshow) {
+    slideshow.appendChild(createControl(".ob-slideshow-prev", -1))
+    slideshow.appendChild(createControl(".ob-slideshow-next", +1))
+    slideshow.addEventListener("mouseover", cancel)
+    slideshow.addEventListener("mouseleave", schedule)
+  }
+
+  function createControl(className, offset) {
+    return h(
+      className,
+      {onclick: offset > 0 ? nextImage : prevImage},
+      h(".ob-slideshow-caret")
+    )
+  }
+}

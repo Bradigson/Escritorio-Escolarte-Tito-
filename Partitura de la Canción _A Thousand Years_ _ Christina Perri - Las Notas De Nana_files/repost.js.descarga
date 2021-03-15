@@ -1,0 +1,22 @@
+function repost(link) {
+  var frameWidth = 600
+  var frameHeight = 300
+
+  link.addEventListener("click", function(event) {
+    event.preventDefault()
+
+    var frameTop = (screen.height - frameHeight) / 2
+    var frameLeft = (screen.width - frameWidth) / 2
+    var frameOptions =
+      "width=" +
+      frameWidth +
+      ",height=" +
+      frameHeight +
+      ",top=" +
+      frameTop +
+      ",left=" +
+      frameLeft
+
+    window.open(link.getAttribute("href"), "repost", frameOptions)
+  })
+}
